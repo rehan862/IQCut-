@@ -1,0 +1,33 @@
+package com.example.data.db
+
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Update
+import com.example.data.model.ProjectEntity
+import kotlinx.coroutines.flow.Flow
+
+@Dao
+interface ProjectDao {
+    @Query("SELECT * FROM projects ORDER BY lastModified DESC")
+    fun getAllProjects(): Flow<List<ProjectEntity>>
+
+    @Query("SELECT * FROM projects WHERE id = :id LIMIT 1")
+    suspend fun getProjectById(id: String): ProjectEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertProject(project: ProjectEntity)
+
+    @Update
+    suspend fun updateProject(project: ProjectEntity)
+
+    @Query("DELETE FROM projects WHERE id = :id")
+    suspend fun deleteProjectById(id: String)
+
+    @Query("UPDATE projects SET name = :newName, lastModified = :modified WHERE id = :id")
+    suspend fun renameProject(id: String, newName: String, modified: Long = System.currentTimeMillis())
+
+    @Query("SELECT COUNT(*) FROM projects")
+    suspend fun getProjectCount(): Int
+}
